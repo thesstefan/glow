@@ -21,22 +21,6 @@ void Kernel::normalize() {
     *this = *this * ((float)1 / sum);
 }
 
-Kernel::Kernel(const float sigma, int width, int height) {
-    const float multiplier = 1. / (2 * PI * sigma * sigma);
-
-    for (int row = -height / 2; row <= height / 2; row++) {
-        std::vector<float> kernelRow;
-
-        for (int column = -width / 2; column <= width / 2; column++) {
-            const float power = -(float)(column * column + row * row) / (2 * sigma * sigma);
-
-            kernelRow.push_back(multiplier * std::pow(E, power));
-        }
-
-        kernelData.push_back(kernelRow);
-    }
-}
-
 std::vector<float> Kernel::operator[](size_t index) const {
     return kernelData.at(index);
 }
@@ -56,3 +40,27 @@ int Kernel::getHeight() const {
 int Kernel::getWidth() const {
     return kernelData[0].size();
 }
+
+std::vector<std::vector<float>> gaussianKernelData(float sigma, int width, int height) {
+    std::vector<std::vector<float>> gaussianKernelData;
+
+    const float multiplier = 1. / (2 * PI * sigma * sigma);
+
+    for (int row = -height / 2; row <= height / 2; row++) {
+        std::vector<float> kernelRow;
+
+        for (int column = -width / 2; column <= width / 2; column++) {
+            const float power = -(float)(column * column + row * row) / (2 * sigma * sigma);
+
+            kernelRow.push_back(multiplier * std::pow(E, power));
+        }
+
+        gaussianKernelData.push_back(kernelRow);
+    }
+
+    return gaussianKernelData;
+}
+
+GaussianKernel::GaussianKernel(float sigma, int width, int height) :
+    Kernel(gaussianKernelData(sigma, width, height)) {}
+

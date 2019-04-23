@@ -47,7 +47,7 @@ ofImage convolve(const ofImage& source,
 void ofApp::setup(){
     source.load("img.bmp");
 
-    Kernel kernel(1, 5, 5);
+    GaussianKernel kernel(1, 5, 5);
     kernel.normalize();
 
     result = convolve(source, kernel);
