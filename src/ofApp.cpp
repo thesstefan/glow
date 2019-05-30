@@ -3,7 +3,7 @@
 #include "kernel.h"
 
 ofImage convolve(const ofImage& source, 
-                  const Kernel& kernel) {
+                 const Kernel& kernel) {
     auto pixelData = source.getPixels();
 
     ofPixels output;
@@ -15,23 +15,23 @@ ofImage convolve(const ofImage& source,
         for (size_t col = 0; col < pixelData.getWidth(); col++) {
             ofColor result(0, 0, 0);
 
-            for (int k_row = -kernel.getHeight() / 2; k_row <= kernel.getHeight() / 2; k_row++)
-                for (int k_col = -kernel.getWidth() / 2; k_col <= kernel.getWidth() / 2; k_col++) {
-                    int used_row = row + k_row;
-                    int used_col = col + k_col;
+            for (int kernel_row = -kernel.getHeight() / 2; kernel_row <= kernel.getHeight() / 2; kernel_row++)
+                for (int kernel_col = -kernel.getWidth() / 2; kernel_col <= kernel.getWidth() / 2; kernel_col++) {
+                    int used_row = row + kernel_row;
+                    int used_col = col + kernel_col;
 
                     if (used_col < 0 || used_row < 0) { 
-                        used_row = pixelData.getHeight() - 1 - k_row + 1;
-                        used_col = pixelData.getWidth() - 1 - k_col + 1;
+                        used_row = pixelData.getHeight() - 1 - kernel_row + 1;
+                        used_col = pixelData.getWidth() - 1 - kernel_col + 1;
                     }
 
                     if (used_col >= (int)pixelData.getWidth() || used_row >= (int)pixelData.getHeight()) {
-                        used_row = k_row - 1;
-                        used_col = k_col - 1;
+                        used_row = kernel_row - 1;
+                        used_col = kernel_col - 1;
                     }
 
                     result += pixelData.getColor(used_col, used_row) *
-                              kernel[k_row + kernel.getHeight() / 2][k_col + kernel.getWidth() / 2];
+                              kernel[kernel_row + kernel.getHeight() / 2][kernel_col + kernel.getWidth() / 2];
                 }
 
             output.setColor(col, row, result);
@@ -47,13 +47,13 @@ ofImage convolve(const ofImage& source,
 void ofApp::setup(){
     source.load("img.bmp");
 
-    GaussianKernel kernel(1, 5, 5);
+    Kernel kernel = getGaussianKernel(5, 5, 1);
     kernel.normalize();
 
     result = convolve(source, kernel);
-
-    for (int i = 0; i < 3; i++)
-        result = convolve(result, kernel);
+    result = convolve(result, kernel);
+    result = convolve(result, kernel);
+    result = convolve(result, kernel);
 }
 
 void ofApp::draw() {
