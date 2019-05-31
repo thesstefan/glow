@@ -25,7 +25,7 @@ Kernel::Kernel(const Kernel& kernel) {
         kernelData.push_back(kernel[row]);
 }
 
-void Kernel::normalize() {
+float Kernel::normalize() {
     float sum = 0;
     for (const auto &row : kernelData)
         for (const auto &element : row)
@@ -35,22 +35,24 @@ void Kernel::normalize() {
     for (auto &row : kernelData)
         for (auto &element : row)
             element *= multiplier;
+
+    return multiplier;
 }
 
 std::vector<float> Kernel::operator[](const size_t index) const {
     return kernelData.at(index);
 }
 
-int Kernel::getHeight() const {
+size_t Kernel::getHeight() const {
     return kernelData.size();
 }
 
-int Kernel::getWidth() const {
+size_t Kernel::getWidth() const {
     return kernelData[0].size();
 }
 
-std::vector<std::vector<float>> GaussianKernel::getGaussianData(const int width, 
-                                                                const int height, 
+std::vector<std::vector<float>> GaussianKernel::getGaussianData(const size_t width, 
+                                                                const size_t height, 
                                                                 const float variance) const {
     if (width <= 0 || height <= 0)
         throw std::invalid_argument("std::invalid_argument: getGaussianKernel() -> kernel must have positive dimensions.");
@@ -58,15 +60,17 @@ std::vector<std::vector<float>> GaussianKernel::getGaussianData(const int width,
     if (width % 2 || height % 2)
         throw std::invalid_argument("std::invalid_argument: getGaussianKernel() -> kernel must have odd dimensions.");
 
-    std::vector<std::vector<float>> kernelData;
-
     const float center_x = width / 2;
     const float center_y = height / 2;
 
-    for (int height_index = 0; height_index < height; height_index++) {
-        std::vector<float> kernelRow;
+    std::vector<std::vector<float>> kernelData;
+    kernelData.reserve(height);
 
-        for (int width_index = 0; width_index < width; width_index++) {
+    for (size_t height_index = 0; height_index < height; height_index++) {
+        std::vector<float> kernelRow;
+        kernelRow.reserve(width);
+
+        for (size_t width_index = 0; width_index < width; width_index++) {
             const float probability = gaussianProbabilty(std::abs(width_index - center_x), 0, variance) *
                                       gaussianProbabilty(std::abs(height_index - center_y), 0, variance);
 
@@ -79,5 +83,5 @@ std::vector<std::vector<float>> GaussianKernel::getGaussianData(const int width,
     return kernelData;
 }
 
-GaussianKernel::GaussianKernel(const int width, const int height, const float variance) :
+GaussianKernel::GaussianKernel(const size_t width, const size_t height, const float variance) :
     Kernel(getGaussianData(width, height, variance)) {}

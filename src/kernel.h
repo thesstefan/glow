@@ -20,17 +20,21 @@ class Kernel {
         /** @brief Copy-construct the Kernel. **/
         Kernel(const Kernel& kernel);
 
-        /** @brief Normalizes the Kernel values. **/
-        void normalize();
+        /** 
+         * @brief Normalizes the Kernel values. 
+         *
+         * @returns The factor used for the normalization.
+         */
+        float normalize();
 
         /** @brief Returns the specified row of the Kernel. **/
         std::vector<float> operator[](const size_t index) const;
         
         /** @brief Returns the height of the Kernel. **/
-        int getHeight() const;
+        size_t getHeight() const;
         
         /** @brief Returns the width of the Kernel. **/
-        int getWidth() const;
+        size_t getWidth() const;
 };
 
 class GaussianKernel : public Kernel {
@@ -45,11 +49,11 @@ class GaussianKernel : public Kernel {
          * @param variance -> The variance of the distribution used to create
          *                    the Kernel.
          *
-         * @warning width and height must be positive and odd. std::invalid_argument
-         *          is thrown otherwise.
+         * @warning width and height must be odd and the variance positive. 
+         *          std::invalid_argument is thrown otherwise.
          */
-        std::vector<std::vector<float>> getGaussianData(const int width, 
-                                                        const int height, 
+        std::vector<std::vector<float>> getGaussianData(const size_t width, 
+                                                        const size_t height, 
                                                         const float variance) const;
 
     public:
@@ -59,5 +63,5 @@ class GaussianKernel : public Kernel {
          *
          * Calls getGaussianData(). All requirements apply.
          */
-        GaussianKernel(const int width, const int height, const float variance);
+        GaussianKernel(const size_t width, const size_t height, const float variance);
 };
