@@ -47,13 +47,14 @@ ofImage convolve(const ofImage& source,
 void ofApp::setup(){
     source.load("img.bmp");
 
-    Kernel kernel = getGaussianKernel(5, 5, 1);
-    kernel.normalize();
+    try {
+        Kernel kernel(getGaussianKernel(5, 5, 1));
 
-    result = convolve(source, kernel);
-    result = convolve(result, kernel);
-    result = convolve(result, kernel);
-    result = convolve(result, kernel);
+        kernel.normalize();
+        result = convolve(source, kernel);
+    } catch (const std::exception& exception) {
+        std::cerr << exception.what() << std::endl;
+    }
 }
 
 void ofApp::draw() {
