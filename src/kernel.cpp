@@ -7,8 +7,8 @@ Kernel::Kernel(const std::vector<std::vector<float>>& kernelData) {
     if (kernelData.size() == 0)
         throw std::invalid_argument("std::invalid_argument: Kernel::Kernel() -> matrix can't be empty.");
 
-    const unsigned int width = kernelData[0].size();
-    for (unsigned int rowIndex = 1; rowIndex < kernelData.size(); rowIndex++)
+    const size_t width = kernelData[0].size();
+    for (size_t rowIndex = 1; rowIndex < kernelData.size(); rowIndex++)
         if (kernelData[rowIndex].size() != width)
             throw std::invalid_argument("std::invalid_argument: Kernel::Kernel() -> matrix must have constant dimensions.");
 
@@ -19,22 +19,25 @@ Kernel::Kernel(const std::vector<std::vector<float>>& kernelData) {
 }
 
 Kernel::Kernel(const Kernel& kernel) {
+    kernelData.reserve(kernel.getHeight());
+
     for (int row = 0; row < kernel.getHeight(); row++)
         kernelData.push_back(kernel[row]);
 }
 
 void Kernel::normalize() {
     float sum = 0;
-    for (const auto& row : kernelData)
-        for (const auto& column : row)
-            sum += column;
+    for (const auto &row : kernelData)
+        for (const auto &element : row)
+            sum += element;
 
-    for (auto& row : kernelData)
-        for (auto& column : row)
-            column *= 1 / sum;
+    const float multiplier = 1 / sum;
+    for (auto &row : kernelData)
+        for (auto &element : row)
+            element *= multiplier;
 }
 
-std::vector<float> Kernel::operator[](size_t index) const {
+std::vector<float> Kernel::operator[](const size_t index) const {
     return kernelData.at(index);
 }
 
@@ -46,7 +49,9 @@ int Kernel::getWidth() const {
     return kernelData[0].size();
 }
 
-std::vector<std::vector<float>> getGaussianData(int width, int height, float variance) {
+std::vector<std::vector<float>> GaussianKernel::getGaussianData(const int width, 
+                                                                const int height, 
+                                                                const float variance) const {
     if (width <= 0 || height <= 0)
         throw std::invalid_argument("std::invalid_argument: getGaussianKernel() -> kernel must have positive dimensions.");
 
@@ -62,8 +67,8 @@ std::vector<std::vector<float>> getGaussianData(int width, int height, float var
         std::vector<float> kernelRow;
 
         for (int width_index = 0; width_index < width; width_index++) {
-            const float probability = gaussianProbabilty(abs(width_index - center_x), 0, variance) *
-                                      gaussianProbabilty(abs(height_index - center_y), 0, variance);
+            const float probability = gaussianProbabilty(std::abs(width_index - center_x), 0, variance) *
+                                      gaussianProbabilty(std::abs(height_index - center_y), 0, variance);
 
             kernelRow.push_back(probability);
         }
@@ -74,5 +79,5 @@ std::vector<std::vector<float>> getGaussianData(int width, int height, float var
     return kernelData;
 }
 
-GaussianKernel::GaussianKernel(int width, int height, float variance) :
+GaussianKernel::GaussianKernel(const int width, const int height, const float variance) :
     Kernel(getGaussianData(width, height, variance)) {}
