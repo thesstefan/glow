@@ -1,69 +1,57 @@
 #include <iostream>
 #include <cassert>
-#include <cstdlib>
+#include <vector>
 
 #include "kernel.h"
 
-std::vector<float> get_random_vector(int max_value, int size) {
-    std::vector<float> vec;
+void print_kernel(const Kernel &kernel) {
+    for (size_t row = 0; row < kernel.getHeight(); row++) {
+        for (size_t col = 0; col < kernel.getWidth(); col++) 
+            std::cout << kernel[row][col] << " ";
 
-    while (vec.size() != size)
-        vec.push_back(std::rand() % max_value);
-
-    return vec;
-}
-
-void kernel_constructor_test(int test_cases = 10) {
-    std::cerr << std::endl << "Kernel::Kernel(std::vector<std::vector<float>>) TESTS" << std::endl << std::endl;
-
-    for (int test_index = 0; test_index < test_cases; test_index++) {
-        std::vector<std::vector<float>> kernelData;
-
-        int height = std::rand() % 50 + 1;
-        int width = std::rand() % 50 + 1;
-        int max_value = std::rand() % 100 + 1;
-
-        for (int row = 0; row < height; row++)
-            kernelData.push_back(get_random_vector(max_value, width));
-
-        Kernel kernel(kernelData);
-
-        assert(kernel.getWidth() == width);
-        assert(kernel.getHeight() == height);
-
-        for (int row = 0; row < kernel.getHeight(); row++)
-            for (int col = 0; col < kernel.getWidth(); col++)
-                assert(kernel[row][col] == kernelData[row][col]);
-
-        std::cerr << "#" << test_index + 1 << " TEST CASE (WIDTH = " << width << ", HEIGHT = " << height << ", MAX_VALUE = " << max_value << ") PASSED" << std::endl;
+        std::cout << std::endl;
     }
 }
 
-void kernel_normalize_test(int test_cases = 10) {
-    std::srand(time(nullptr));
+bool is_kernel_equal(const Kernel &kernel_1, const Kernel &kernel_2) {
+    if (kernel_1.getHeight() != kernel_2.getHeight() || kernel_1.getWidth() != kernel_2.getWidth())
+        return false;
 
-    std::cerr << std::endl << "Kernel::normalize TESTS" << std::endl << std::endl; 
+    for (size_t row = 0; row < kernel_1.getHeight(); row++)
+        for (size_t col = 0; col < kernel_1.getWidth(); col++)
+            if (std::abs(kernel_1[row][col] - kernel_2[row][col]) > 0.0001)
+                return false;
 
-    for (int test_index = 0; test_index < test_cases; test_index++) {
-        float random_sigma = std::rand() / 3;
+    return true;
+}
 
-        Kernel kernel(random_sigma, 5, 5);
-        kernel.normalize();
+void gaussian_kernel_test() {
+    size_t caseNumber = 0;
+    std::cerr << "GAUSSIAN KERNEL TEST" << std::endl << std::endl;
 
-        float sum = 0;
-        for (int row = 0; row < kernel.getHeight(); row++)
-            for (const auto& col : kernel[row])
-                sum += col;
+    std::cout << "CASE #" << ++caseNumber << ": size:7x7, variance=0.707106789 -> ";
+    
+    GaussianKernel gauss_1(7, 7, 0.707106789);
 
-        assert(sum >= 1 - 0.000001 && sum <= 1 + 0.000001);
+    Kernel kernel_1(std::vector<std::vector<double>> {
+                         std::vector<double>{0.00000067, 0.00002292, 0.00019117, 0.00038771, 0.00019117, 0.00002292, 0.00000067},
+                         std::vector<double>{0.00002292, 0.00078633, 0.00655965, 0.01330373, 0.00655965, 0.00078633, 0.00002292},
+                         std::vector<double>{0.00019117, 0.00655965, 0.05472157, 0.11098164, 0.05472157, 0.00655965, 0.00019117},
+                         std::vector<double>{0.00038771, 0.01330373, 0.11098164, 0.22508352, 0.11098164, 0.01330373, 0.00038771},
+                         std::vector<double>{0.00019117, 0.00655965, 0.05472157, 0.11098164, 0.05472157, 0.00655965, 0.00019117},
+                         std::vector<double>{0.00002292, 0.00078633, 0.00655965, 0.01330373, 0.00655965, 0.00078633, 0.00002292},
+                         std::vector<double>{0.00000067, 0.00002292, 0.00019117, 0.00038771, 0.00019117, 0.00002292, 0.00000067}
+                   });
 
-        std::cerr << "#" << test_index + 1 << " TEST CASE (SIGMA = " << random_sigma << ") PASSED" << std::endl;
-    }
+    assert(is_kernel_equal(kernel_1, gauss_1));
+
+    std::cout << "PASSED" << std::endl;
+
+    std::cout << std::endl << caseNumber << " TESTS PASSED SUCCESSFULLY" << std::endl;
 }
 
 void kernel_test() {
-    kernel_normalize_test(20);
-    kernel_constructor_test(20);
+    gaussian_kernel_test();
 }
 
 int main() {
