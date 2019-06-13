@@ -24,7 +24,9 @@ inline ofImage convolve(const ofImage &input, const Kernel &kernel) {
 
     for (size_t row = 0; row < pixels.getHeight(); row++)
         for (size_t col = 0; col < pixels.getWidth(); col++) {
-            ofColor result(0, 0, 0);
+            double red = 0;
+            double green = 0;
+            double blue = 0;
 
             for (int kernelRow = -kernelHeight / 2; 
                      kernelRow <= kernelHeight / 2; 
@@ -47,13 +49,17 @@ inline ofImage convolve(const ofImage &input, const Kernel &kernel) {
                     else if (usedCol >= (int)pixels.getWidth())
                         usedCol = kernelCol - 1;
 
-                    result += pixels.getColor(usedCol, usedRow) *
-                              kernel[kernelRow + kernelHeight / 2]
-                                    [kernelCol + kernelWidth / 2];
+                    const double multiplier = kernel[kernelRow + kernelHeight / 2]
+                                                    [kernelCol + kernelWidth / 2];
 
+                    const ofColor color = pixels.getColor(usedCol, usedRow);
+
+                    red   += color.r * multiplier;
+                    green += color.g * multiplier;
+                    blue  += color.b * multiplier;
                 }
 
-            output.setColor(col, row, result);
+            output.setColor(col, row, ofColor(red, green, blue));
         }
 
     ofImage outputImg;

@@ -10,8 +10,9 @@ bool is_image_equal(const ofImage &image_1, const ofImage &image_2) {
 
     if (pixels_1.getWidth() != pixels_2.getWidth() || 
         image_1.getWidth() != image_2.getWidth() ||
-        image_1.getHeight() != image_2.getHeight())
+        image_1.getHeight() != image_2.getHeight()) {
         return false;
+    }
 
     for (size_t pixelIndex = 0; pixelIndex < pixels_1.getWidth(); pixelIndex++)
         if (pixels_1.getColor(pixelIndex) != pixels_2.getColor(pixelIndex))
@@ -43,11 +44,7 @@ void convolve_test() {
     ofImage expected_1;
     expected_1.load("expected_1.bmp");
 
-    if (is_image_equal(expected_1, output_1) == false) {
-        std::cout << "FAILED" << std::endl;
-
-        return;
-    }
+    assert(is_image_equal(expected_1, output_1));
 
     std::cout << "PASSED" << std::endl;
 
@@ -66,11 +63,7 @@ void convolve_test() {
     ofImage expected_2;
     expected_2.load("expected_2.bmp");
 
-    if (is_image_equal(expected_2, output_2) == false) {
-        std::cout << "FAILED" << std::endl;
-
-        return;
-    }
+    assert(is_image_equal(expected_2, output_2));
 
     std::cout << "PASSED" << std::endl;
 
@@ -89,11 +82,7 @@ void convolve_test() {
     ofImage expected_3;
     expected_3.load("expected_3.bmp");
 
-    if (is_image_equal(expected_3, output_3) == false) {
-        std::cout << "FAILED" << std::endl;
-
-        return;
-    }
+    assert(is_image_equal(expected_3, output_3));
 
     std::cout << "PASSED" << std::endl;
 
