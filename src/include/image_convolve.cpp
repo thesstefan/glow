@@ -6,7 +6,7 @@ ofImage convertToImage(const ofImage_<PixelType> &floatImage) {
 
     ofPixels output;
     output.allocate(floatPixels.getWidth(), floatPixels.getHeight(),
-                    OF_PIXELS_RGBA);
+                    OF_PIXELS_RGB);
 
     for (size_t row = 0; row < floatPixels.getHeight(); row++)
         for (size_t col = 0; col < floatPixels.getWidth(); col++) {
@@ -15,15 +15,14 @@ ofImage convertToImage(const ofImage_<PixelType> &floatImage) {
             output.setColor(col, row, 
                             ofColor(static_cast<unsigned int>(floatColor.r), 
                                     static_cast<unsigned int>(floatColor.g), 
-                                    static_cast<unsigned int>(floatColor.b), 
-                                    255));
+                                    static_cast<unsigned int>(floatColor.b)));
         }
 
     ofImage outputImg;
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
-                            OF_IMAGE_COLOR_ALPHA);
+                            OF_IMAGE_COLOR);
                 
     return outputImg;
 }
@@ -35,7 +34,7 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
 
     ofPixels_<float> output;
     output.allocate(pixels.getWidth(), pixels.getHeight(),
-                    OF_PIXELS_RGBA);
+                    OF_PIXELS_RGB);
 
     // Avoid size_t to int conversions.
     int kernelHeight = kernel.getHeight();
@@ -85,7 +84,7 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
-                            OF_IMAGE_COLOR_ALPHA);
+                            OF_IMAGE_COLOR);
 
     return outputImg;
 
