@@ -1,6 +1,6 @@
 #include "image_convolve.h"
 
-ofImage convertFromFloat(const ofFloatImage& floatImage) {
+ofImage convertFromFloat(const ofFloatImage &floatImage) {
     const ofPixels_<float> floatPixels = floatImage.getPixels();
 
     ofPixels output;
@@ -87,13 +87,13 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
 
 }
 
-ofImage convolve(const ofImage& input, const Kernel &kernel) {
+ofImage convolve(const ofImage &input, const Kernel &kernel) {
     ofFloatImage result = float_convolve<unsigned char>(input, kernel);
 
     return convertFromFloat(result);
 }
 
-ofImage iterativeConvolve(const ofImage& image, const Kernel &kernel,
+ofImage iterativeConvolve(const ofImage &image, const Kernel &kernel,
                           const int times) {
     ofFloatImage result = float_convolve<unsigned char>(image, kernel);
 
