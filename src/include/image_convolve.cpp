@@ -5,18 +5,21 @@ ofImage convertFromFloat(const ofFloatImage& floatImage) {
 
     ofPixels output;
     output.allocate(floatPixels.getWidth(), floatPixels.getHeight(),
-                    OF_IMAGE_COLOR);
+                    OF_PIXELS_RGBA);
 
     for (size_t row = 0; row < floatPixels.getHeight(); row++)
-        for (size_t col = 0; col < floatPixels.getWidth(); col++)
+        for (size_t col = 0; col < floatPixels.getWidth(); col++) {
+            ofColor_<float> floatColor = floatImage.getColor(col, row);
+
             output.setColor(col, row, 
-                            ofColor(floatPixels.getColor(col, row)));
+                            ofColor(floatColor.r, floatColor.g, floatColor.b, 255));
+        }
 
     ofImage outputImg;
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
-                            OF_IMAGE_COLOR);
+                            OF_IMAGE_COLOR_ALPHA);
                 
     return outputImg;
 }
@@ -28,7 +31,7 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
 
     ofPixels_<float> output;
     output.allocate(pixels.getWidth(), pixels.getHeight(),
-                    OF_IMAGE_COLOR);
+                    OF_PIXELS_RGBA);
 
     // Avoid size_t to int conversions.
     int kernelHeight = kernel.getHeight();
@@ -71,16 +74,17 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
                     blue  += static_cast<float>(color.b) * multiplier;
                 }
 
-            output.setColor(col, row, ofColor(red, green, blue));
+            output.setColor(col, row, ofColor_<float>(red, green, blue, 255));
         }
-
+    
     ofImage_<float> outputImg;
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
-                            OF_IMAGE_COLOR);
-                
+                            OF_IMAGE_COLOR_ALPHA);
+
     return outputImg;
+
 }
 
 ofImage convolve(const ofImage& input, const Kernel &kernel) {
