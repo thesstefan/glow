@@ -4,11 +4,12 @@
 #include "kernel.h"
 
 /** 
- * @brief Converts an ofFloatImage to an ofImage.
+ * @brief Converts an ofImage_ to an ofImage.
  *
  * @warning Accuracy can be lost.
  */
-ofImage convertFromFloat(const ofFloatImage &floatImage);
+template <typename PixelType>
+ofImage convertToImage(const ofImage_<PixelType> &inputImage);
 
 /**
  * @brief Convolve an image with a Kernel using float values.
