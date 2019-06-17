@@ -4,31 +4,29 @@
 #include "kernel.h"
 
 /** 
- * @brief Converts an ofImage_ to an ofImage.
+ * @brief Converts an ofFloatImage to an ofImage.
  *
- * @warning Accuracy can be lost as PixelType to unsigned char
+ * @warning Accuracy can be lost as float to unsigned char
  *          conversions are made.
  */
-template <typename PixelType>
-ofImage convertToImage(const ofImage_<PixelType> &input);
+ofImage convertToImage(const ofFloatImage &input);
 
 /**
- * @brief Convolve an image with a Kernel using float values.
+ * @brief Convolve an ofImage with a Kernel using float values.
  *
  * This is more accuarate than convolve and it's recommended to
  * be used while dealing with successive convolutions.
  */
-template <typename PixelType>
-ofFloatImage float_convolve(const ofImage_<PixelType> &input,
+ofFloatImage float_convolve(const ofImage &input,
                             const Kernel &kernel);
+
 /**
- * @brief Convolves an image with a Kernel using unsigned char values. 
+ * @brief Convolves an ofImage with a Kernel using unsigned char values. 
  *
  * For succesive calls, iterativeConvolve is recommended for
  * better accuracy.
  */
-template <typename PixelType>
-ofImage convolve(const ofImage_<PixelType> &input, 
+ofImage convolve(const ofImage &input, 
                  const Kernel &kernel);
 
 /**
@@ -40,7 +38,6 @@ ofImage convolve(const ofImage_<PixelType> &input,
  * @param kernel -> The kernel to be used.
  * @param times -> The number of convolve operations to be applied.
  */
-template <typename PixelType>
-ofImage iterativeConvolve(const ofImage_<PixelType> &image, 
+ofImage iterativeConvolve(const ofImage &image, 
                           const Kernel &kernel,
                           const int times);

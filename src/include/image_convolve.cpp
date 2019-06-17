@@ -1,7 +1,5 @@
 #include "image_convolve.h"
 
-#include <iostream>
-
 template <typename InputType, typename OutputType>
 ofImage_<OutputType> convert(const ofImage_<InputType> &input) {
     const ofPixels_<InputType> pixels = input.getPixels();
@@ -27,11 +25,6 @@ ofImage_<OutputType> convert(const ofImage_<InputType> &input) {
                             OF_IMAGE_COLOR);
                 
     return outputImg;
-}
-
-template <typename PixelType>
-ofImage convertToImage(const ofImage_<PixelType> &input) {
-    return convert<PixelType, unsigned char>(input);
 }
 
 template <typename InputType, typename OutputType>
@@ -96,32 +89,32 @@ ofImage_<OutputType> convolve_(const ofImage_<InputType> &input,
     return outputImg;
 }
 
-template <typename PixelType>
-ofFloatImage float_convolve(const ofImage_<PixelType> &input, const Kernel &kernel) {
-    return convolve_<PixelType, float>(input, kernel);
-}
-
-template <typename PixelType>
-ofImage convolve(const ofImage_<PixelType> &input, const Kernel &kernel) {
-    return convolve_<PixelType, unsigned char>(input, kernel);
-}
-
-template <typename PixelType>
-ofImage iterativeConvolve(const ofImage_<PixelType> &image, const Kernel &kernel,
-                          const int times) {
-    ofFloatImage result = float_convolve<PixelType>(image, kernel);
+template <typename InputType, typename OutputType>
+ofImage_<OutputType> iterativeConvolve_(const ofImage_<InputType> &image, 
+                                       const Kernel &kernel,
+                                       const int times) {
+    ofFloatImage result = convolve_<InputType, float>(image, kernel);
 
     for (int index = 1; index < times; index++)
-        result = float_convolve<float>(result, kernel);
+        result = convolve_<float, float>(result, kernel);
 
-    return convertToImage<float>(result);
+    return convert<float, OutputType>(result);
 }
 
-template ofImage convolve<unsigned char>(const ofImage &input, const Kernel &kernel);
+ofImage convertToImage(const ofFloatImage &input) {
+    return convert<float, unsigned char>(input);
+}
 
-template ofFloatImage float_convolve<unsigned char>(const ofImage &input, const Kernel &kernel);
-template ofFloatImage float_convolve<float>(const ofFloatImage &input, const Kernel &kernel);
+ofFloatImage float_convolve(const ofImage &input, const Kernel &kernel) {
+    return convolve_<unsigned char, float>(input, kernel);
+}
 
-template ofImage convertToImage<float>(const ofFloatImage &input);
+ofImage convolve(const ofImage &input, const Kernel &kernel) {
+    return convolve_<unsigned char, unsigned char>(input, kernel);
+}
 
-template ofImage iterativeConvolve<unsigned char>(const ofImage& input, const Kernel& kernel, const int times);
+ofImage iterativeConvolve(const ofImage &image, 
+                          const Kernel &kernel,
+                          const int times) {
+    return iterativeConvolve_<unsigned char, unsigned char>(image, kernel, times);
+}
