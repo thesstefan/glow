@@ -1,24 +1,26 @@
 #include "image_convolve.h"
 
-template <typename PixelType>
-ofImage convertToImage(const ofImage_<PixelType> &floatImage) {
-    const ofPixels_<PixelType> floatPixels = floatImage.getPixels();
+#include <iostream>
 
-    ofPixels output;
-    output.allocate(floatPixels.getWidth(), floatPixels.getHeight(),
+template <typename InputType, typename OutputType>
+ofImage_<OutputType> convert(const ofImage_<InputType> &input) {
+    const ofPixels_<InputType> pixels = input.getPixels();
+
+    ofPixels_<OutputType> output;
+    output.allocate(pixels.getWidth(), pixels.getHeight(),
                     OF_PIXELS_RGB);
 
-    for (size_t row = 0; row < floatPixels.getHeight(); row++)
-        for (size_t col = 0; col < floatPixels.getWidth(); col++) {
-            ofColor_<PixelType> floatColor = floatImage.getColor(col, row);
+    for (size_t row = 0; row < pixels.getHeight(); row++)
+        for (size_t col = 0; col < pixels.getWidth(); col++) {
+            ofColor_<InputType> color = input.getColor(col, row);
 
             output.setColor(col, row, 
-                            ofColor(static_cast<unsigned int>(floatColor.r), 
-                                    static_cast<unsigned int>(floatColor.g), 
-                                    static_cast<unsigned int>(floatColor.b)));
+                            ofColor(static_cast<OutputType>(color.r), 
+                                    static_cast<OutputType>(color.g), 
+                                    static_cast<OutputType>(color.b)));
         }
 
-    ofImage outputImg;
+    ofImage_<OutputType> outputImg;
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
@@ -28,11 +30,16 @@ ofImage convertToImage(const ofImage_<PixelType> &floatImage) {
 }
 
 template <typename PixelType>
-ofFloatImage float_convolve(const ofImage_<PixelType> &input, 
-                            const Kernel &kernel) {
-    const ofPixels_<PixelType> pixels = input.getPixels();
+ofImage convertToImage(const ofImage_<PixelType> &input) {
+    return convert<PixelType, unsigned char>(input);
+}
 
-    ofPixels_<float> output;
+template <typename InputType, typename OutputType>
+ofImage_<OutputType> convolve_(const ofImage_<InputType> &input, 
+                               const Kernel &kernel) {
+    const ofPixels_<InputType> pixels = input.getPixels();
+
+    ofPixels_<OutputType> output;
     output.allocate(pixels.getWidth(), pixels.getHeight(),
                     OF_PIXELS_RGB);
 
@@ -70,38 +77,51 @@ ofFloatImage float_convolve(const ofImage_<PixelType> &input,
                     const double multiplier = kernel[kernelRow + kernelHeight / 2]
                                                     [kernelCol + kernelWidth / 2];
 
-                    const ofColor color = pixels.getColor(usedCol, usedRow);
+                    const ofColor_<InputType> color = pixels.getColor(usedCol, usedRow);
 
-                    red   += static_cast<float>(color.r) * multiplier;
-                    green += static_cast<float>(color.g) * multiplier;
-                    blue  += static_cast<float>(color.b) * multiplier;
+                    red   += static_cast<OutputType>(color.r) * multiplier;
+                    green += static_cast<OutputType>(color.g) * multiplier;
+                    blue  += static_cast<OutputType>(color.b) * multiplier;
                 }
 
-            output.setColor(col, row, ofColor_<float>(red, green, blue, 255));
+            output.setColor(col, row, ofColor_<OutputType>(red, green, blue, 255));
         }
     
-    ofImage_<float> outputImg;
+    ofImage_<OutputType> outputImg;
     outputImg.setFromPixels(output.getData(), 
                             output.getWidth(), 
                             output.getHeight(), 
                             OF_IMAGE_COLOR);
 
     return outputImg;
-
 }
 
-ofImage convolve(const ofImage &input, const Kernel &kernel) {
-    ofFloatImage result = float_convolve<unsigned char>(input, kernel);
-
-    return convertToImage(result);
+template <typename PixelType>
+ofFloatImage float_convolve(const ofImage_<PixelType> &input, const Kernel &kernel) {
+    return convolve_<PixelType, float>(input, kernel);
 }
 
-ofImage iterativeConvolve(const ofImage &image, const Kernel &kernel,
+template <typename PixelType>
+ofImage convolve(const ofImage_<PixelType> &input, const Kernel &kernel) {
+    return convolve_<PixelType, unsigned char>(input, kernel);
+}
+
+template <typename PixelType>
+ofImage iterativeConvolve(const ofImage_<PixelType> &image, const Kernel &kernel,
                           const int times) {
-    ofFloatImage result = float_convolve<unsigned char>(image, kernel);
+    ofFloatImage result = float_convolve<PixelType>(image, kernel);
 
     for (int index = 1; index < times; index++)
-        result = float_convolve(result, kernel);
+        result = float_convolve<float>(result, kernel);
 
-    return convertToImage(result);
+    return convertToImage<float>(result);
 }
+
+template ofImage convolve<unsigned char>(const ofImage &input, const Kernel &kernel);
+
+template ofFloatImage float_convolve<unsigned char>(const ofImage &input, const Kernel &kernel);
+template ofFloatImage float_convolve<float>(const ofFloatImage &input, const Kernel &kernel);
+
+template ofImage convertToImage<float>(const ofFloatImage &input);
+
+template ofImage iterativeConvolve<unsigned char>(const ofImage& input, const Kernel& kernel, const int times);
