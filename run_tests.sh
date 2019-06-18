@@ -9,6 +9,7 @@ for test in *; do
 
         cp ../../Makefile .
         cp ../../test_config.make config.make
+        cp ../../test_addons.make addons.make
 
         make Debug
 
