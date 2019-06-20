@@ -262,7 +262,7 @@ class ofApp : public ofxUnitTestsApp {
     }
 
     void run() {
-        ofLogNotice() << "TESTING convolve MODULE\n";
+        ofLogNotice() << "\nTESTING convolve MODULE\n";
 
         convert_test();
         ofLogNotice() << '\n';

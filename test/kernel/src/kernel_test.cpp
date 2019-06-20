@@ -4,7 +4,7 @@
 
 #include "kernel.h"
 
-bool is_kernel_equal(const Kernel &kernel_1, const Kernel &kernel_2) {
+bool isKernelEqual(const Kernel &kernel_1, const Kernel &kernel_2) {
     if (kernel_1.getHeight() != kernel_2.getHeight() || kernel_1.getWidth() != kernel_2.getWidth())
         return false;
 
@@ -32,7 +32,7 @@ class ofApp : public ofxUnitTestsApp {
                 {0.00000067, 0.00002292, 0.00019117, 0.00038771, 0.00019117, 0.00002292, 0.00000067}
         });
 
-        ofxTest(is_kernel_equal(kernel_1, gauss_1), 
+        ofxTest(isKernelEqual(kernel_1, gauss_1), 
                 "size:7x7, variance=0.707106789");
     }
 
@@ -53,7 +53,7 @@ class ofApp : public ofxUnitTestsApp {
                 {1./9, 1./9, 1./9}
         });
 
-        ofxTest(is_kernel_equal(kernel_1, normalized_1),
+        ofxTest(isKernelEqual(kernel_1, normalized_1),
                 "kernel_1");
 
         Kernel kernel_2(std::vector<std::vector<double>> {
@@ -70,7 +70,7 @@ class ofApp : public ofxUnitTestsApp {
                 {1./16, 2./16, 1./16}
         });
 
-        ofxTest(is_kernel_equal(kernel_2, normalized_2),
+        ofxTest(isKernelEqual(kernel_2, normalized_2),
                 "kernel_2");
 
         Kernel kernel_3(std::vector<std::vector<double>> {
@@ -91,13 +91,18 @@ class ofApp : public ofxUnitTestsApp {
                 {1./100, 2./100, 4./100,  2./100, 1./100}
         });
 
-        ofxTest(is_kernel_equal(kernel_3, normalized_3),
+        ofxTest(isKernelEqual(kernel_3, normalized_3),
                 "kernel_3");
     }
 
         void run() {
+            ofLogNotice() << "\nTESTING kernel MODULE\n";
+
             gaussian_kernel_test();
+            ofLogNotice() << '\n';
+
             kernel_normalize_test();
+            ofLogNotice() << '\n';
         }
 };
 
