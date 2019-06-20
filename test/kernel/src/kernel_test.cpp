@@ -96,7 +96,8 @@ class ofApp : public ofxUnitTestsApp {
     }
 
         void run() {
-            ofLogNotice() << "\nTESTING kernel MODULE\n";
+            ofLogNotice() << '\n';
+            ofLogNotice() << "TESTING kernel MODULE\n";
 
             gaussian_kernel_test();
             ofLogNotice() << '\n';

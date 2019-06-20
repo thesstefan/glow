@@ -27,10 +27,10 @@ class ofApp : public ofxUnitTestsApp {
     }
 
     void run() {
-        ofLogNotice() << "\nTESTING gaussian_distribution MODULE\n";
+        ofLogNotice() << '\n';
+        ofLogNotice() << "TESTING gaussian_distribution MODULE\n";
 
         run_gaussian_test();
-
         ofLogNotice() << '\n';
     }
 };
