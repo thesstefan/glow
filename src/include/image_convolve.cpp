@@ -28,18 +28,15 @@ ofImage_<OutputType> convert(const ofImage_<InputType> &input) {
 }
 
 // Handles convolution at the margins of the image. (mirroring)
-size_t adjustPosition(const int coordinate, 
-                      const int kernelCoordinate,
+size_t borderHandling(const int coordinate, 
                       const int max) {
-    const int unadjustedPosition = coordinate + kernelCoordinate;
+    if (coordinate < max && coordinate >= 0)
+        return coordinate;
 
-    if (unadjustedPosition < max && unadjustedPosition >= 0)
-        return unadjustedPosition;
+    if (coordinate < 0)
+        return max + coordinate;
 
-    if (unadjustedPosition < 0)
-        return max + kernelCoordinate;
-
-    return unadjustedPosition % max;
+    return coordinate % max;
 }
 
 template <typename InputType, typename OutputType>
@@ -69,8 +66,8 @@ ofImage_<OutputType> convolve_(const ofImage_<InputType> &input,
                          kernelCol <= kernelWidth / 2;
                          kernelCol++) {
 
-                    const size_t usedRow = adjustPosition(row, kernelRow, pixels.getHeight());
-                    const size_t usedCol = adjustPosition(col, kernelCol, pixels.getWidth());
+                    const size_t usedRow = borderHandling(row + kernelRow, pixels.getHeight());
+                    const size_t usedCol = borderHandling(col + kernelCol, pixels.getWidth());
 
                     const double multiplier = kernel[kernelRow + kernelHeight / 2]
                                                     [kernelCol + kernelWidth / 2];
