@@ -49,17 +49,18 @@ ofImage_<PixelType> getOnePixelImage(const size_t width, const size_t height,
 // Checks if an image with one white pixel and the others black is convolved correctly.
 template <typename PixelType>
 bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &kernel, 
-                                  const size_t pixel_x, const size_t pixel_y) {
+                              const size_t pixel_x, const size_t pixel_y) {
     size_t usedWidth = 0;
     size_t usedHeight = 0;
 
-    for (int width = (int)(pixel_x - kernel.getWidth() / 2); 
-             width <= (int)(pixel_x + kernel.getWidth() / 2); 
-             width++)
-        for (int height = (int)(pixel_y - kernel.getHeight() / 2);
-                 height <= (int)(pixel_y + kernel.getHeight() / 2);
-                 height++) {
+    const int startWidth = pixel_x - kernel.getWidth() / 2;
+    const int endWidth = pixel_x + kernel.getWidth() / 2;
 
+    const int startHeight = pixel_y - kernel.getHeight() / 2;
+    const int endHeight = pixel_y + kernel.getHeight() / 2;
+
+    for (int width = startWidth; width <= endWidth; width++)
+        for (int height = startHeight; height <= endHeight; height++) {
             if (width < 0)
                 usedWidth = image.getWidth() + width;
             else if (width >= (int)image.getWidth())
@@ -69,17 +70,19 @@ bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &ke
 
             if (height < 0)
                 usedHeight = image.getHeight() + height;
-            else if (height >= (int)image.getWidth())
+            else if (height >= (int)image.getHeight())
                 usedHeight = height - pixel_y - 1;
             else 
                 usedHeight = height;
 
             const ofColor_<PixelType> color = image.getColor(usedWidth, usedHeight);
 
-            const float colorValue = 255 * kernel[height - pixel_y + kernel.getHeight() / 2]
-                                                  [width - pixel_x + kernel.getWidth() / 2];
+            const float expectedColorValue = 255 * kernel[height - startHeight]
+                                                         [width - startWidth];
 
-            const ofColor_<PixelType> expectedColor(colorValue, colorValue, colorValue);
+            const ofColor_<PixelType> expectedColor(expectedColorValue,
+                                                    expectedColorValue,
+                                                    expectedColorValue);
 
             if (color != expectedColor)
                 return false;
@@ -97,13 +100,16 @@ bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &ke
 }
 
 template <typename PixelType>
-bool areImagesEqual(const ofImage_<PixelType> &image, const ofImage_<PixelType> &image_) {
-    if (image.getHeight() != image_.getHeight() ||
-        image.getWidth() != image_.getWidth())
+bool areImagesEqual(const ofImage_<PixelType> &image_1, const ofImage_<PixelType> &image_2,
+                    const float maxError) {
+    if (image_1.getHeight() != image_2.getHeight() ||
+        image_1.getWidth() != image_2.getWidth())
+        return false;
 
-    for (size_t width = 0; width < image.getWidth(); width++)
-        for (size_t height = 0; height < image.getHeight(); height++)
-            if (image.getColor(width, height) != image_.getColor(width, height))
+    for (size_t width = 0; width < image_1.getWidth(); width++)
+        for (size_t height = 0; height < image_1.getHeight(); height++)
+            if ((image_1.getColor(width, height) - image_2.getColor(width, height)).
+                    getBrightness() > maxError)
                 return false;
 
     return true;
@@ -111,25 +117,24 @@ bool areImagesEqual(const ofImage_<PixelType> &image, const ofImage_<PixelType> 
 
 // Checks if the average brightness of two images is roughly the same.
 template <typename PixelType>
-bool hasSameBrightness(const ofImage &image, const ofImage_<PixelType> &image_, 
-                               const float maxError) {
-    
-    if (image.getHeight() != image_.getHeight() ||
-        image.getWidth() != image_.getWidth())
+bool hasSameBrightness(const ofImage &image_1, const ofImage_<PixelType> &image_2, 
+                       const float maxError) {
+    if (image_1.getHeight() != image_2.getHeight() ||
+        image_1.getWidth() != image_2.getWidth())
             return false;
 
-    unsigned long brightness = 0;
-    unsigned long brightness_ = 0;
+    unsigned long brightness_1 = 0;
+    unsigned long brightness_2 = 0;
 
-    for (size_t width = 0; width < image.getWidth(); width++)
-        for (size_t height = 0; height < image.getHeight(); height++) {
-            brightness += image.getColor(width, height).getBrightness();
-            brightness_ += image_.getColor(width, height).getBrightness();
+    for (size_t width = 0; width < image_1.getWidth(); width++)
+        for (size_t height = 0; height < image_1.getHeight(); height++) {
+            brightness_1 += image_1.getColor(width, height).getBrightness();
+            brightness_2 += image_2.getColor(width, height).getBrightness();
         }
 
-    size_t imageSize = image.getWidth() * image.getHeight();
+    size_t imageSize = image_1.getWidth() * image_1.getHeight();
 
-    return std::abs(float((brightness - brightness_) / imageSize)) < maxError;
+    return std::abs(float((brightness_1 - brightness_2) / imageSize)) < maxError;
 }
 
 class ofApp : public ofxUnitTestsApp {
@@ -251,14 +256,12 @@ class ofApp : public ofxUnitTestsApp {
 
         ofImage result = iterativeConvolve(image, kernel, 5);
 
-        ofFloatImage floatImage;
-        image.load("test_img.bmp");
+        ofFloatImage floatImage = float_convolve(image, kernel);
+        for (int times = 1; times < 5; times++)
+            floatImage = float_convolve(convertToImage(floatImage), kernel);
 
-        for (int times = 0; times < 5; times++)
-            floatImage = float_convolve(floatImage, kernel);
-
-        ofxTest(areImagesEqual(convertToImage(floatImage), result),
-                "5 times");
+        ofxTest(areImagesEqual(convertToImage(floatImage), result, 2),
+                "5 times -> maxError = 2");
     }
 
     void run() {
