@@ -46,13 +46,21 @@ ofImage_<PixelType> getOnePixelImage(const size_t width, const size_t height,
     return outputImg;
 }
 
+size_t marginsHandling(const int desiredCoord,
+                       const int max) {
+    if (desiredCoord >= 0 && desiredCoord < max)
+        return desiredCoord;
+
+    if (desiredCoord < 0)
+        return max + desiredCoord;
+
+    return desiredCoord % max;
+}
+
 // Checks if an image with one white pixel and the others black is convolved correctly.
 template <typename PixelType>
 bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &kernel, 
                               const size_t pixel_x, const size_t pixel_y) {
-    size_t usedWidth = 0;
-    size_t usedHeight = 0;
-
     const int startWidth = pixel_x - kernel.getWidth() / 2;
     const int endWidth = pixel_x + kernel.getWidth() / 2;
 
@@ -61,19 +69,8 @@ bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &ke
 
     for (int width = startWidth; width <= endWidth; width++)
         for (int height = startHeight; height <= endHeight; height++) {
-            if (width < 0)
-                usedWidth = image.getWidth() + width;
-            else if (width >= (int)image.getWidth())
-                usedWidth = width - pixel_x - 1;
-            else
-                usedWidth = width;
-
-            if (height < 0)
-                usedHeight = image.getHeight() + height;
-            else if (height >= (int)image.getHeight())
-                usedHeight = height - pixel_y - 1;
-            else 
-                usedHeight = height;
+            const size_t usedWidth = marginsHandling(width, image.getWidth());
+            const size_t usedHeight = marginsHandling(height, image.getHeight());
 
             const ofColor_<PixelType> color = image.getColor(usedWidth, usedHeight);
 
@@ -123,6 +120,7 @@ bool hasSameBrightness(const ofImage &image_1, const ofImage_<PixelType> &image_
         image_1.getWidth() != image_2.getWidth())
             return false;
 
+    // Brightness sum of all pixels in the images.
     unsigned long brightness_1 = 0;
     unsigned long brightness_2 = 0;
 
