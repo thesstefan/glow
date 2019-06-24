@@ -27,6 +27,21 @@ ofImage_<OutputType> convert(const ofImage_<InputType> &input) {
     return outputImg;
 }
 
+// Handles convolution at the margins of the image. (mirroring)
+size_t adjustPosition(const int coordinate, 
+                      const int kernelCoordinate,
+                      const int max) {
+    const int unadjustedPosition = coordinate + kernelCoordinate;
+
+    if (unadjustedPosition < max && unadjustedPosition >= 0)
+        return unadjustedPosition;
+
+    if (unadjustedPosition < 0)
+        return max + kernelCoordinate;
+
+    return unadjustedPosition % max;
+}
+
 template <typename InputType, typename OutputType>
 ofImage_<OutputType> convolve_(const ofImage_<InputType> &input, 
                                const Kernel &kernel) {
@@ -54,18 +69,8 @@ ofImage_<OutputType> convolve_(const ofImage_<InputType> &input,
                          kernelCol <= kernelWidth / 2;
                          kernelCol++) {
 
-                    int usedRow = row + kernelRow;
-                    int usedCol = col + kernelCol;
-
-                    if (usedRow < 0)
-                        usedRow = pixels.getHeight() + kernelRow;
-                    else if (usedRow >= (int)pixels.getHeight())
-                        usedRow = kernelRow - 1;
-
-                    if (usedCol < 0) 
-                        usedCol = pixels.getWidth() + kernelCol;
-                    else if (usedCol >= (int)pixels.getWidth())
-                        usedCol = kernelCol - 1;
+                    const size_t usedRow = adjustPosition(row, kernelRow, pixels.getHeight());
+                    const size_t usedCol = adjustPosition(col, kernelCol, pixels.getWidth());
 
                     const double multiplier = kernel[kernelRow + kernelHeight / 2]
                                                     [kernelCol + kernelWidth / 2];
@@ -91,8 +96,8 @@ ofImage_<OutputType> convolve_(const ofImage_<InputType> &input,
 
 template <typename InputType, typename OutputType>
 ofImage_<OutputType> iterativeConvolve_(const ofImage_<InputType> &image, 
-                                       const Kernel &kernel,
-                                       const int times) {
+                                        const Kernel &kernel,
+                                        const int times) {
     ofFloatImage result = convolve_<InputType, float>(image, kernel);
 
     for (int index = 1; index < times; index++)
