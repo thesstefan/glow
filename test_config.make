@@ -37,7 +37,7 @@
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-PROJECT_EXTERNAL_SOURCE_PATHS = ../../src/include
+PROJECT_EXTERNAL_SOURCE_PATHS = ../../src/lib
 
 ################################################################################
 # PROJECT EXCLUSIONS
