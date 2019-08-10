@@ -8,11 +8,11 @@ void ofApp::setup(){
     try {
         source.load("input.bmp");
 
-        GaussianKernel kernel(25, 25, 10);
+        GaussianKernel<double, 25, 25> kernel(10);
 
         kernel.normalize();
 
-        result = glow(source, kernel);
+        result = glow<double, 25, 25>(source, kernel);
 
         result.save("output.bmp");
     } catch (const std::exception& exception) {
