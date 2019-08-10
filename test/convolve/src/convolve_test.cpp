@@ -58,14 +58,15 @@ size_t marginsHandling(const int desiredCoord,
 }
 
 // Checks if an image with one white pixel and the others black is convolved correctly.
-template <typename PixelType>
-bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, const Kernel &kernel, 
+template <typename PixelType, typename kType, size_t kWidth, size_t kHeight>
+bool isOnePixelImageConvolved(const ofImage_<PixelType> &image, 
+                              const Kernel<kType, kWidth, kHeight> &kernel, 
                               const size_t pixel_x, const size_t pixel_y) {
-    const int startWidth = pixel_x - kernel.getWidth() / 2;
-    const int endWidth = pixel_x + kernel.getWidth() / 2;
+    const int startWidth = pixel_x - kWidth / 2;
+    const int endWidth = pixel_x + kWidth / 2;
 
-    const int startHeight = pixel_y - kernel.getHeight() / 2;
-    const int endHeight = pixel_y + kernel.getHeight() / 2;
+    const int startHeight = pixel_y - kHeight / 2;
+    const int endHeight = pixel_y + kHeight / 2;
 
     for (int width = startWidth; width <= endWidth; width++)
         for (int height = startHeight; height <= endHeight; height++) {
@@ -157,34 +158,40 @@ class ofApp : public ofxUnitTestsApp {
     void convolve_test() {
         ofLogNotice() << "Testing convolve()";
 
-        const Kernel kernel(std::vector<std::vector<double>> {
+        const Kernel<float, 3, 3> kernel(
+        {{
             {0.0625, 0.125, 0.0625},
             {0.125,  0.25,  0.125},
             {0.0625, 0.125, 0.0625},
-        });
+        }});
 
         ofxTest(isOnePixelImageConvolved<unsigned char>(
-                    convolve(getOnePixelImage<unsigned char>(101, 101, 50, 50), kernel),
+                    convolve<float, 3, 3>
+                        (getOnePixelImage<unsigned char>(101, 101, 50, 50), kernel),
                     kernel, 50, 50), 
                 "center");
 
         ofxTest(isOnePixelImageConvolved<unsigned char>(
-                    convolve(getOnePixelImage<unsigned char>(101, 101, 50, 0), kernel),
+                    convolve<float, 3, 3>
+                        (getOnePixelImage<unsigned char>(101, 101, 50, 0), kernel),
                     kernel, 50, 0), 
                 "up");
 
         ofxTest(isOnePixelImageConvolved<unsigned char>(
-                    convolve(getOnePixelImage<unsigned char>(101, 101, 50, 100), kernel),
+                    convolve<float, 3, 3>
+                        (getOnePixelImage<unsigned char>(101, 101, 50, 100), kernel),
                     kernel, 50, 100), 
                 "down");
 
         ofxTest(isOnePixelImageConvolved<unsigned char>(
-                    convolve(getOnePixelImage<unsigned char>(101, 101, 0, 50), kernel),
+                    convolve<float, 3, 3>
+                        (getOnePixelImage<unsigned char>(101, 101, 0, 50), kernel),
                     kernel, 0, 50), 
                 "left");
 
         ofxTest(isOnePixelImageConvolved<unsigned char>(
-                    convolve(getOnePixelImage<unsigned char>(101, 101, 100, 50), kernel),
+                    convolve<float, 3, 3>
+                        (getOnePixelImage<unsigned char>(101, 101, 100, 50), kernel),
                     kernel, 100, 50), 
                 "right");
 
@@ -194,41 +201,47 @@ class ofApp : public ofxUnitTestsApp {
         convolve(image, kernel).save("ala.bmp");
 
         ofxTest(hasSameBrightness<unsigned char>
-                    (image, convolve(image, kernel), 0.00001),
+                    (image, convolve<float, 3, 3>(image, kernel), 0.00001),
                 "brightness -> maxError = 0.00001");
     }
 
     void float_convolve_test() {
         ofLogNotice() << "Testing float_convolve()";
 
-        const Kernel kernel(std::vector<std::vector<double>> {
+        const Kernel<float, 3, 3> kernel(
+        {{
             {0.0625, 0.125, 0.0625},
             {0.125,  0.25,  0.125},
             {0.0625, 0.125, 0.0625},
-        });
+        }});
 
         ofxTest(isOnePixelImageConvolved<float>(
-                    float_convolve(getOnePixelImage<float>(101, 101, 50, 50), kernel),
+                    float_convolve<float, 3, 3>
+                        (getOnePixelImage<float>(101, 101, 50, 50), kernel),
                     kernel, 50, 50), 
                 "center");
 
         ofxTest(isOnePixelImageConvolved<float>(
-                    float_convolve(getOnePixelImage<float>(101, 101, 50, 0), kernel),
+                    float_convolve<float, 3, 3>
+                        (getOnePixelImage<float>(101, 101, 50, 0), kernel),
                     kernel, 50, 0), 
                 "up");
 
         ofxTest(isOnePixelImageConvolved<float>(
-                    float_convolve(getOnePixelImage<float>(101, 101, 50, 100), kernel),
+                    float_convolve<float, 3, 3>
+                        (getOnePixelImage<float>(101, 101, 50, 100), kernel),
                     kernel, 50, 100), 
                 "down");
 
         ofxTest(isOnePixelImageConvolved<float>(
-                    float_convolve(getOnePixelImage<float>(101, 101, 0, 50), kernel),
+                    float_convolve<float, 3, 3>
+                        (getOnePixelImage<float>(101, 101, 0, 50), kernel),
                     kernel, 0, 50), 
                 "left");
 
         ofxTest(isOnePixelImageConvolved<float>(
-                    float_convolve(getOnePixelImage<float>(101, 101, 100, 50), kernel),
+                    float_convolve<float, 3, 3>
+                        (getOnePixelImage<float>(101, 101, 100, 50), kernel),
                     kernel, 100, 50), 
                 "right");
 
@@ -236,27 +249,29 @@ class ofApp : public ofxUnitTestsApp {
         image.load("test_img.bmp");
 
         ofxTest(hasSameBrightness<float>
-                    (image, float_convolve(image, kernel), 0.00001),
+                    (image, float_convolve<float, 3, 3>(image, kernel), 0.00001),
                 "brightness -> maxError = 0.00001");
     }
 
     void iterative_convolve_test() {
         ofLogNotice() << "Testing iterativeConvolve()";
 
-        const Kernel kernel(std::vector<std::vector<double>> {
+        const Kernel<float, 3, 3> kernel(
+        {{
             {0.0625, 0.125, 0.0625},
             {0.125,  0.25,  0.125},
             {0.0625, 0.125, 0.0625},
-        });
+        }});
 
         ofImage image;
         image.load("test_img.bmp");
 
-        ofImage result = iterativeConvolve(image, kernel, 5);
+        ofImage result = iterativeConvolve<float, 3, 3>(image, kernel, 5);
 
-        ofFloatImage floatImage = float_convolve(image, kernel);
+        ofFloatImage floatImage = float_convolve<float, 3, 3>(image, kernel);
         for (int times = 1; times < 5; times++)
-            floatImage = float_convolve(convertToImage(floatImage), kernel);
+            floatImage = 
+                float_convolve<float, 3, 3>(convertToImage(floatImage), kernel);
 
         ofxTest(areImagesEqual(convertToImage(floatImage), result, 2),
                 "5 times -> maxError = 2");
