@@ -36,14 +36,25 @@ ofImage blend(const ofImage &top, const ofImage &bottom) {
  *        the blurred image over the given one.
  *
  * @param image -> The image to be glowing.
- * @param kernel -> The kernel to be used to blur.
+ *
+ * @param kType -> The type of the GaussianKernel.
+ * @param kWidth -> The width of the GaussianKernel.
+ * @param kHeight -> The height of the GaussianKernel.
+ * @param kVariance -> The variance of the GaussianKernel.
  */
 template <typename kType, size_t kWidth, size_t kHeight>
 ofImage glow(const ofImage &image,
-             const Kernel<kType, kWidth, kHeight> &kernel) {
+             const double kVariance) {
+    GaussianKernel<kType, 1, kHeight> vertical(kVariance);
+    GaussianKernel<kType, kWidth, 1> horizontal(kVariance);
+
+    vertical.normalize();
+    horizontal.normalize();
+
     ofImage blurred;
 
-    blurred = convolve(image, kernel);
+    blurred = convolve<kType, 1, kHeight>(image, vertical);
+    blurred = convolve<kType, kWidth, 1>(blurred, horizontal);
 
     return blend(image, blurred);
 }
